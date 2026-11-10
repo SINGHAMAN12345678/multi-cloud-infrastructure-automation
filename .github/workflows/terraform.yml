@@ -1,0 +1,40 @@
+name: Terraform Validation
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    name: Validate ${{ matrix.cloud }} Terraform
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        cloud:
+          - aws
+          - azure
+
+    defaults:
+      run:
+        working-directory: terraform/${{ matrix.cloud }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Check Terraform formatting
+        run: terraform fmt -check -recursive
+
+      - name: Initialize Terraform
+        run: terraform init -backend=false
+
+      - name: Validate Terraform
+        run: terraform validate
